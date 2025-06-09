@@ -627,25 +627,6 @@ resource openaideploymentembedding 'Microsoft.CognitiveServices/accounts/deploym
   dependsOn: [openaideploymentmini]
 }
 
-// Add deployment for gpt-4.1 model
-resource openaideploymentgpt41 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
-  name: 'gpt-4.1'
-  parent: openai
-  sku: {
-    name: 'DataZoneStandard'
-    capacity: 300
-  }
-  properties: {
-    model: {
-      name: 'gpt-4.1'
-      format: 'OpenAI'
-      version: '2025-04-14'
-    }
-    versionUpgradeOption: 'OnceCurrentVersionExpired'
-  }
-  dependsOn: [openaideploymentembedding]
-}
-
 resource dynamicsession 'Microsoft.App/sessionPools@2024-02-02-preview' = {
   name: 'sessionPool'
   location: location
