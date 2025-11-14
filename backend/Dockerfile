@@ -1,36 +1,32 @@
-FROM python:3-slim
+FROM mcr.microsoft.com/playwright/python:v1.49.0-jammy
+
+# Copy uv from the Astral image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-
-# Set the working directory in the container
+# Set working directory
 WORKDIR /code
-
-# COPY requirements.txt .
-# RUN pip install --no-cache-dir --upgrade -r requirements.txt
-
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
-
-# Copy from the cache instead of linking since it's a mounted volume
 ENV UV_LINK_MODE=copy
 
+# ---- Copy dependency files first ----
+COPY pyproject.toml uv.lock /code/
 
-# RUN playwright install --with-deps chromium
-# Copy the rest of the application code into the container
-# COPY . .
+# Install dependencies (no dev)
+RUN uv sync --no-dev
 
+# ---- Copy the rest of your app ----
 COPY . /code
-RUN uv sync --locked --no-dev
 
-# Place executables in the environment at the front of the path
+# Update PATH for virtual environment
 ENV PATH="/code/.venv/bin:$PATH"
+
+# Install Playwright and Chromium
 RUN playwright install --with-deps chromium
 
-
-
-# Expose the port that the app will run on
+# Expose app port
 EXPOSE 3100
 
-# Command to run the application using Uvicorn
+# Start the app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3100", "--workers", "4"]
